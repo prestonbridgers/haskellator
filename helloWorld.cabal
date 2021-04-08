@@ -17,7 +17,7 @@ executable haskellator
   main-is: Haskellator.hs
   -- other-modules:
   -- other-extensions:
-  build-depends: base >=4.12 && <4.13,
+  build-depends: base >=4.12 && <4.15,
                  brick,
                  vty,
                  cursor
