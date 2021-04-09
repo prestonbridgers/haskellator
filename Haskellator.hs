@@ -24,7 +24,8 @@ main = do
 
 -- My own state for the program
 data MyState = MyState {
-    evalString :: String
+    evalString :: String,
+    env        :: [(String, Double)]
     }
     deriving (Show, Eq)
 
@@ -44,14 +45,19 @@ app = App {
 -- Takes a state and returns a list of widgets of
 -- the appropriate resource name
 drawUI :: MyState -> [Widget ResourceName]
-drawUI s = [title, evalText]
-        where
-              title = hCenter $ str $ "Haskellator v" ++ show 0.1
-              evalText = center $ hCenter $ border $ str $ evalString s
+drawUI s = [
+           (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envConcat $ env s)
+           ,center $ border $ str $ evalString s
+           ]
+
+-- Helper function to compress the MyState env to a widget compatible list
+envConcat :: [(String, Double)] -> [String]
+envConcat [] = []
+envConcat (x:xs) = (fst x ++ " = " ++ (show $ snd x)) : envConcat xs
 
 -- buildInitState: bui
 buildInitState :: IO MyState
-buildInitState = pure MyState { evalString = "" }
+buildInitState = pure MyState { evalString = "", env = [("x", 3), ("pi", 3.1415)] }
 
 -- Handling vty events
 handleEvent :: MyState -> BrickEvent n e -> EventM n (Next MyState)
@@ -62,7 +68,7 @@ handleEvent s e =
                 EvKey (KChar 'q') [] -> halt s
                 EvKey KBS [] -> continue s'
                     where s' = if null $ evalString s then s
-                               else MyState { evalString = init $ evalString s }
-                EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c] }
+                               else MyState { evalString = init $ evalString s, env = env s }
+                EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
                 _ -> continue s
         _ -> continue s
