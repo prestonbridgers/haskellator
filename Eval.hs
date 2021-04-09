@@ -32,9 +32,9 @@ update s d env = (s,d) : removeL s env
 evA :: Env -> AExpr -> Double
 evA env (Var x) = lookUp x env
 evA env (Const x) = x
---evA env (Add x xx) = evA x env + evA xx env 
---evA env (Sub x xx) = evA x env - evA xx env 
---evA env (Mul x xx) = evA x env * evA xx env 
---evA env (Div x xx) = evA x env / evA xx env
---evA env (Expo x xx) = evA x env ** evA xx env 
---evA env (Mod x xx) = evA x env `mod` evA xx env 
+evA env (Add x xx) = (evA env x) + (evA env xx)
+evA env (Sub x xx) = (evA env x) - (evA env xx)
+evA env (Mul x xx) = (evA env x) * (evA env xx) 
+--evA env (Div x xx) = (evA x env) / (evA xx env)
+--evA env (Expo x xx) = (evA x env) ** (evA xx env) 
+--evA env (Mod x xx) = (evA x env) `mod` (evA xx env) 
