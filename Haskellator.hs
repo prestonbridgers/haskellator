@@ -35,7 +35,6 @@ type ResourceName = String
 app :: App MyState e ResourceName
 app = App {
     appDraw = drawUI,
-    -- appChooseCursor = showFirstCursor,
     appChooseCursor = neverShowCursor,
     appHandleEvent = handleEvent,
     appStartEvent = pure,
