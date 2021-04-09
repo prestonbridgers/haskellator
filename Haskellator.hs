@@ -8,6 +8,7 @@ import Brick.Widgets.Center
 import Brick.Widgets.Dialog
 import Brick.Widgets.Table
 import Graphics.Vty.Input.Events
+import Eval
 
 import Cursor.Simple.List.NonEmpty
 import qualified Data.List.NonEmpty as DNE
@@ -54,6 +55,7 @@ drawUI s = [title, evalText]
 buildInitState :: IO MyState
 buildInitState = pure MyState { evalString = "" }
 
+
 -- Handling vty events
 handleEvent :: MyState -> BrickEvent n e -> EventM n (Next MyState)
 handleEvent s e =
@@ -66,4 +68,7 @@ handleEvent s e =
                                else MyState { evalString = init $ evalString s }
                 EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c] }
                 _ -> continue s
+                -- enter is pressed we need to get what is in the calculator and parse/evaluate what
+                -- we are given and then retun the value calculated to the haskellator
+                --EvKey KEnter [] 
         _ -> continue s
