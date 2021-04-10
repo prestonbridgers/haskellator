@@ -1,5 +1,7 @@
 module Main where
 
+import Lang
+
 import Brick
 import Brick.AttrMap
 import Brick.Util
@@ -57,7 +59,7 @@ envConcat (x:xs) = (fst x ++ " = " ++ (show $ snd x)) : envConcat xs
 
 -- buildInitState: bui
 buildInitState :: IO MyState
-buildInitState = pure MyState { evalString = "", env = [("x", 3), ("pi", 3.1415)] }
+buildInitState = pure MyState { evalString = "", env = [] }
 
 -- Handling vty events
 handleEvent :: MyState -> BrickEvent n e -> EventM n (Next MyState)
@@ -70,5 +72,19 @@ handleEvent s e =
                     where s' = if null $ evalString s then s
                                else MyState { evalString = init $ evalString s, env = env s }
                 EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
+                EvKey KEnter [] -> continue s'
+                                where s' = case exec (evalString s) (env s) of
+                                         (Left val)     -> MyState {evalString = show val, env = env s}
+                                         (Right newEnv) -> MyState {evalString = "", env = newEnv}
                 _ -> continue s
         _ -> continue s
+
+
+
+
+
+
+
+
+
+
