@@ -8,8 +8,12 @@ import Brick.Widgets.Center
 import Brick.Widgets.Dialog
 import Brick.Widgets.Table
 import Graphics.Vty.Input.Events
+
+-- our own created .hs files for parsing and executing input from the user  
 import Eval
 import Prepro
+import Parser
+----
 
 import Cursor.Simple.List.NonEmpty
 import qualified Data.List.NonEmpty as DNE
