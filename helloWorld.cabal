@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 
 executable haskellator
   main-is: Haskellator.hs
-  other-modules: Eval
+  other-modules: Eval,
+                 Prepro
   -- other-extensions:
   build-depends: base >=4.12 && <4.15,
                  brick,
