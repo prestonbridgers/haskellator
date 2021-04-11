@@ -17,7 +17,7 @@ import Graphics.Vty
 import System.Exit
 import Data.Char
 
--- Main
+    -- Main
 main :: IO ()
 main = do
     initState <- buildInitState
@@ -42,15 +42,14 @@ app = App {
     appHandleEvent = handleEvent,
     appStartEvent = pure,
     appAttrMap = const $ attrMap mempty [(attrName "selected", fg red)]
-}
+    }
 
 -- Takes a state and returns a list of widgets of
 -- the appropriate resource name
 drawUI :: MyState -> [Widget ResourceName]
-drawUI s = [
-           (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envConcat $ env s)
-           ,center $ border $ str $ evalString s
-           ]
+drawUI s = [(hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envConcat $ env s)
+    ,center $ border $ str $ evalString s
+    ]
 
 -- Helper function to compress the MyState env to a widget compatible list
 envConcat :: [(String, Double)] -> [String]
@@ -67,24 +66,14 @@ handleEvent s e =
     case e of
         VtyEvent vtye ->
             case vtye of
-                EvKey (KChar 'q') [] -> halt s
-                EvKey KBS [] -> continue s'
-                    where s' = if null $ evalString s then s
-                               else MyState { evalString = init $ evalString s, env = env s }
-                EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
-                EvKey KEnter [] -> continue s'
-                                where s' = case exec (evalString s) (env s) of
-                                         (Left val)     -> MyState {evalString = show val, env = env s}
-                                         (Right newEnv) -> MyState {evalString = "", env = newEnv}
-                _ -> continue s
+            EvKey (KChar 'q') [] -> halt s
+            EvKey KBS [] -> continue s'
+                where s' = if null $ evalString s then s
+                           else MyState { evalString = init $ evalString s, env = env s }
+            EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
+            EvKey KEnter [] -> continue s'
+                where s' = case exec (evalString s) (env s) of
+                           (Left val)     -> MyState {evalString = show val, env = env s}
+                           (Right newEnv) -> MyState {evalString = "", env = newEnv}
+            _ -> continue s
         _ -> continue s
-
-
-
-
-
-
-
-
-
-

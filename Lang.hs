@@ -7,22 +7,22 @@ type Env = [(Id, Val)]
 
 data Instr = IAssign Id Expr
            | IExpr Expr
-	       deriving (Show, Eq)
+           deriving (Show, Eq)
 
 data Expr = Const Val
-     | Var Id
-     | Add Expr Expr
-	 | Sub Expr Expr
-	 | Mul Expr Expr
-	 | Div Expr Expr
-	 deriving (Show, Eq)
+          | Var Id
+          | Add Expr Expr
+          | Sub Expr Expr
+          | Mul Expr Expr
+          | Div Expr Expr
+          deriving (Show, Eq)
 
 data Token = TId Id | TConst Val
            | TEq | TAdd | TSub | TMul
-		   | TDiv | TLPar | TRPar
-		   | TExpr Expr
-		   | TAssign Id Expr
-		   deriving (Show, Eq)
+           | TDiv | TLPar | TRPar
+           | TExpr Expr
+           | TAssign Id Expr
+           deriving (Show, Eq)
 
 -- Test environment
 testEnv :: Env
@@ -62,9 +62,9 @@ isCSym :: String -> Bool
 isCSym [] = True
 isCSym (x:xs) | x `elem` ['0' .. '9'] = isCSym xs
               | x == '.' = isCSym' xs
-			  | otherwise = False
-			  where isCSym' [] = True
-			        isCSym' (y:ys) = if y `elem` ['0' .. '9'] then isCSym' ys else False
+              | otherwise = False
+                  where isCSym' [] = True
+                        isCSym' (y:ys) = if y `elem` ['0' .. '9'] then isCSym' ys else False
 
 isVSym :: String -> Bool
 isVSym [] = False
@@ -82,8 +82,8 @@ classify s | s == "+" = TAdd
            | s == "=" = TEq
            | s == "(" = TLPar
            | s == ")" = TRPar
-		   | isCSym s = TConst (read s :: Val)
-		   | isVSym s = TId s
+           | isCSym s = TConst (read s :: Val)
+           | isVSym s = TId s
 
 prep :: String -> String
 prep [] = []
@@ -99,16 +99,6 @@ prep (x:xs) = x : prep xs
 tokenize :: String -> [Token]
 tokenize s = map classify $ words $ prep s
 
-
-
-
-
--- data Token = TId Id | TConst Val
---            | TEq | TAdd | TSub | TMul
--- 		   | TDiv | TLPar | TRPar
--- 		   | TExpr Expr
--- 		   | TAssign Id Expr
--- 		   deriving Show
 
 -- Parse time baby
 parse :: [Token] -> [Token] -> [Token]
