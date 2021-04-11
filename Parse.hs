@@ -19,19 +19,17 @@ data Expr = Var Id | Const N
           |Sin Expr
           deriving Show 
 
-data Token = Tcon N 
-           | TId Id
-           | AddOp 
-           | SubOp
-           | MulOp 
-           | DivOp
-           | ExpOp 
-           | CosOp
-           | SinOp
-           | OpAss
+data BOps = OpAss | SubOp | AddOp | DivOp | MulOp | ExpOp
+           deriving (Show,Enum,Eq,Ord)
+
+data UOps =  CosOp | SinOp
+           deriving Show
+
+data Token = CSym Double | VSym String
+           | UOp UOps | BOp BOps 
            | LPar | RPar
            | TExpr Expr 
-           | TAss Id Expr 
+           | TAss Instr 
            deriving Show 
 
 --type of environment for variables to be assigned in
@@ -111,16 +109,16 @@ isVSym' (x:xs) = if (isLower x && isDigit x) then isVSym' xs else False
 classify :: String -> Token
 classify "(" = LPar
 classify ")" = RPar
-classify "+" = AddOp
-classify "-" = SubOp
-classify "=" = OpAss
-classify "*" = MulOp
-classify "/" = DivOp
-classify "^" = ExpOp
-classify "cos" = CosOp
-classify "sin" = SinOp
-classify x | isVSym x = TId x
-           | isCSym x = Tcon (read x :: Double)
+classify "+" = BOp AddOp
+classify "-" = BOp SubOp
+classify "=" = BOp OpAss
+classify "*" = BOp MulOp
+classify "/" = BOp DivOp
+classify "^" = BOp ExpOp
+classify "cos" = UOp CosOp
+classify "sin" = UOp SinOp
+classify x | isVSym x = VSym x
+           | isCSym x = CSym (read x :: Double)
            | otherwise = error "classify error: Not a token"
 
  
@@ -142,20 +140,20 @@ classify x | isVSym x = TId x
 
 -- here we are goin to do all the parsing in this file 
 parse :: [Token] -> [Token] -> [Token]
-parse (Tcon n : stack) input = parse (TExpr (Const n): stack) input
+parse (CSym n : stack)                    input = parse (TExpr (Const n): stack) input
+parse (VSym v : stack)                   input = parse (TExpr (Var v): stack) input
+parse (RPar: TExpr e : LPar : stack)      input = parse (TExpr e : stack) input -- taking care of parens we just get rid of them 
 
-parse (RPar: TExpr e : LPar : stack)        input = parse (TExpr e : stack) input -- taking care of parens we just get rid of them 
+parse (TExpr e2 : BOp AddOp : TExpr e1 : stack) input = parse (TExpr (Add e1 e2) : stack) input -- covers add
+parse (TExpr e2 : BOp SubOp : TExpr e1: stack)  input = parse (TExpr(Sub e1 e2) : stack) input -- covers Sub
+parse (TExpr e2 : BOp MulOp : TExpr e1 : stack) input = parse (TExpr (Mul e1 e2) : stack) input 
+parse (TExpr e2 : BOp DivOp : TExpr e1: stack)  input = parse (TExpr(Div e1 e2) : stack) input 
+parse (TExpr e2 : BOp ExpOp : TExpr e1 : stack) input = parse (TExpr (Expo e1 e2) : stack) input 
 
-parse (TExpr e2 : AddOp : TExpr e1 : stack) input = parse (TExpr (Add e1 e2) : stack) input -- covers add
-parse (TExpr e2 : SubOp : TExpr e1: stack) input = parse (TExpr(Sub e1 e2) : stack) input -- covers Sub
-parse (TExpr e2 : MulOp : TExpr e1 : stack) input = parse (TExpr (Mul e1 e2) : stack) input 
-parse (TExpr e2 : DivOp : TExpr e1: stack) input = parse (TExpr(Div e1 e2) : stack) input 
-parse (TExpr e2 : ExpOp : TExpr e1 : stack) input = parse (TExpr (Expo e1 e2) : stack) input 
+parse (TExpr e : UOp CosOp : stack)             input = parse (TExpr(Cos e):stack) input -- taking care of cos
+parse (TExpr e : UOp SinOp : stack)             input = parse (TExpr(Sin e):stack) input -- taking care of sin
 
-parse (TExpr e : CosOp : stack)         input = parse (TExpr(Cos e):stack) input -- taking care of cos
-parse (TExpr e : SinOp : stack)         input = parse (TExpr(Sin e):stack) input -- taking care of sin
-
-parse (TExpr e2: OpAss : TId v : stack)     input = parse (TAss v e2 : stack ) input -- taking care of an assignmnet 
+parse (TExpr e2: BOp OpAss : TExpr (Var v) : stack)     input = parse (TAss (Assign v e2 ): stack ) input -- taking care of an assignmnet 
 
 parse stack (i:input) = parse (i:stack) input
 parse stack [] = stack
@@ -164,7 +162,7 @@ parse stack [] = stack
 tokToIn :: [Token] -> Instr
 tokToIn [] = error "Nothing to parse to instruction"
 tokToIn [(TExpr e1)] = AExpr e1 
-tokToIn [(TAss id e1)] = Assign id e1 
+tokToIn [(TAss (Assign id e1))] = Assign id e1 
 tokToIn _ = error "Parse Error"
 
 tt :: String -> [Token]
@@ -176,5 +174,5 @@ pp s = parse [] s
 tok :: [Token] -> Instr
 tok s = tokToIn s
 
-exec :: String -> Either Env Double
-exec s = eval (tok (pp (tt s))) ([])
+exec :: String -> Env -> Either Env Double
+exec s env = eval (tok (pp (tt s))) (env)

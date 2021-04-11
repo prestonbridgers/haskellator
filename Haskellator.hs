@@ -28,7 +28,8 @@ main = do
 
 -- My own state for the program
 data MyState = MyState {
-    evalString :: String
+    evalString :: String,
+    env :: [(String, Double)]
     }
     deriving (Show, Eq)
 
@@ -49,14 +50,20 @@ app = App {
 -- Takes a state and returns a list of widgets of
 -- the appropriate resource name
 drawUI :: MyState -> [Widget ResourceName]
-drawUI s = [title, evalText]
-        where
-              title = hCenter $ str $ "Haskellator v" ++ show 0.1
-              evalText = center $ hCenter $ border $ str $ evalString s
+drawUI s = [
+           (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 1) $ hCenter $ str $ "when giving variables values to use later you must put everything after = in parenthesis.")
+            <=> (padTop (Pad 1) $ hCenter $ str $ "example: x = (3+1), y = (4)") <=> (padTop (Pad 1) $ hCenter $ str $ "you can used saved values instead of rewriting the numbers they represent") 
+            <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envCon $ env s)
+           ,center $ border $ str $ evalString s 
+           ]
+
+envCon :: [(String, Double)] -> [String] 
+envCon [] = []
+envCon (x:xs) = (fst x ++ " = " ++ (show $ snd x)) : envCon xs
 
 -- buildInitState: bui
 buildInitState :: IO MyState
-buildInitState = pure MyState { evalString = "" }
+buildInitState = pure MyState { evalString = "", env = [] }
 
 
 -- Handling vty events
@@ -68,12 +75,10 @@ handleEvent s e =
                 EvKey (KChar 'q') [] -> halt s
                 EvKey KBS [] -> continue s'
                     where s' = if null $ evalString s then s
-                               else MyState { evalString = init $ evalString s }
-                EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c] }
-                _ -> continue s
-                -- enter is pressed we need to get what is in the calculator and parse/evaluate what
-                -- we are given and then retun the value calculated to the haskellator
-                --EvKey KEnter [] -> continue s
-                --    where s = if null $ evalString s then s 
-                --              else MyState
+                               else MyState { evalString = init $ evalString s, env = env s }
+                EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
+                EvKey KEnter [] -> continue s'
+                    where s' = case exec (evalString s) (env s) of 
+                             (Right val)    -> MyState {evalString = show val, env = env s}
+                             (Left newEnv)    -> MyState {evalString = "", env = newEnv}
         _ -> continue s
