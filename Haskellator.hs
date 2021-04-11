@@ -10,9 +10,7 @@ import Brick.Widgets.Table
 import Graphics.Vty.Input.Events
 
 -- our own created .hs files for parsing and executing input from the user  
-import Eval
-import Prepro
-import Parser
+import Parse
 ----
 
 import Cursor.Simple.List.NonEmpty
@@ -75,5 +73,7 @@ handleEvent s e =
                 _ -> continue s
                 -- enter is pressed we need to get what is in the calculator and parse/evaluate what
                 -- we are given and then retun the value calculated to the haskellator
-                --EvKey KEnter [] 
+                --EvKey KEnter [] -> continue s
+                --    where s = if null $ evalString s then s 
+                --              else MyState
         _ -> continue s
