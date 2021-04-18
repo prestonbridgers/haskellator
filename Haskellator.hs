@@ -1,5 +1,7 @@
 module Main where
 
+import Lang
+
 import Brick
 import Brick.AttrMap
 import Brick.Util
@@ -15,7 +17,7 @@ import Graphics.Vty
 import System.Exit
 import Data.Char
 
--- Main
+    -- Main
 main :: IO ()
 main = do
     initState <- buildInitState
@@ -24,7 +26,8 @@ main = do
 
 -- My own state for the program
 data MyState = MyState {
-    evalString :: String
+    evalString :: String,
+    env        :: [(String, Double)]
     }
     deriving (Show, Eq)
 
@@ -35,24 +38,27 @@ type ResourceName = String
 app :: App MyState e ResourceName
 app = App {
     appDraw = drawUI,
-    -- appChooseCursor = showFirstCursor,
     appChooseCursor = neverShowCursor,
     appHandleEvent = handleEvent,
     appStartEvent = pure,
     appAttrMap = const $ attrMap mempty [(attrName "selected", fg red)]
-}
+    }
 
 -- Takes a state and returns a list of widgets of
 -- the appropriate resource name
 drawUI :: MyState -> [Widget ResourceName]
-drawUI s = [title, evalText]
-        where
-              title = hCenter $ str $ "Haskellator v" ++ show 0.1
-              evalText = center $ hCenter $ border $ str $ evalString s
+drawUI s = [(hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envConcat $ env s)
+    ,center $ border $ str $ evalString s
+    ]
+
+-- Helper function to compress the MyState env to a widget compatible list
+envConcat :: [(String, Double)] -> [String]
+envConcat [] = []
+envConcat (x:xs) = (fst x ++ " = " ++ (show $ snd x)) : envConcat xs
 
 -- buildInitState: bui
 buildInitState :: IO MyState
-buildInitState = pure MyState { evalString = "" }
+buildInitState = pure MyState { evalString = "", env = [] }
 
 -- Handling vty events
 handleEvent :: MyState -> BrickEvent n e -> EventM n (Next MyState)
@@ -60,10 +66,14 @@ handleEvent s e =
     case e of
         VtyEvent vtye ->
             case vtye of
-                EvKey (KChar 'q') [] -> halt s
-                EvKey KBS [] -> continue s'
-                    where s' = if null $ evalString s then s
-                               else MyState { evalString = init $ evalString s }
-                EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c] }
-                _ -> continue s
+            EvKey (KChar 'q') [] -> halt s
+            EvKey KBS [] -> continue s'
+                where s' = if null $ evalString s then s
+                           else MyState { evalString = init $ evalString s, env = env s }
+            EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
+            EvKey KEnter [] -> continue s'
+                where s' = case exec (evalString s) (env s) of
+                           (Left val)     -> MyState {evalString = show val, env = env s}
+                           (Right newEnv) -> MyState {evalString = "", env = newEnv}
+            _ -> continue s
         _ -> continue s
