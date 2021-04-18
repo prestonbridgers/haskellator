@@ -1,7 +1,5 @@
 module Main where
 
-import Lang
-
 import Brick
 import Brick.AttrMap
 import Brick.Util
@@ -79,7 +77,7 @@ handleEvent s e =
             EvKey (KChar c) [] -> continue MyState {evalString = evalString s ++ [c], env = env s }
             EvKey KEnter [] -> continue s'
                 where s' = case exec (evalString s) (env s) of
-                           (Left val)     -> MyState {evalString = show val, env = env s}
-                           (Right newEnv) -> MyState {evalString = "", env = newEnv}
+                           (Left newEnv) -> MyState {evalString = "", env = newEnv}
+                           (Right val)     -> MyState {evalString = show val, env = env s}
             _ -> continue s
         _ -> continue s
