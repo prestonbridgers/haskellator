@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 executable haskellator
   main-is: Haskellator.hs
-  other-modules: Lang
+  other-modules: Parse
   -- other-extensions:
   build-depends: base >=4.12 && <4.15,
                  brick,

@@ -11,6 +11,10 @@ import Brick.Widgets.Dialog
 import Brick.Widgets.Table
 import Graphics.Vty.Input.Events
 
+-- our own created .hs files for parsing and executing input from the user  
+import Parse
+----
+
 import Cursor.Simple.List.NonEmpty
 import qualified Data.List.NonEmpty as DNE
 import Graphics.Vty
@@ -47,14 +51,16 @@ app = App {
 -- Takes a state and returns a list of widgets of
 -- the appropriate resource name
 drawUI :: MyState -> [Widget ResourceName]
-drawUI s = [(hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envConcat $ env s)
-    ,center $ border $ str $ evalString s
-    ]
+drawUI s = [
+           (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 1) $ hCenter $ str $ "when giving variables values to use later you must put everything after = in parenthesis.")
+            <=> (padTop (Pad 1) $ hCenter $ str $ "example: x = (3+1), y = (4)") <=> (padTop (Pad 1) $ hCenter $ str $ "you can used saved values instead of rewriting the numbers they represent") 
+            <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envCon $ env s)
+           ,center $ border $ str $ evalString s 
+           ]
 
--- Helper function to compress the MyState env to a widget compatible list
-envConcat :: [(String, Double)] -> [String]
-envConcat [] = []
-envConcat (x:xs) = (fst x ++ " = " ++ (show $ snd x)) : envConcat xs
+envCon :: [(String, Double)] -> [String] 
+envCon [] = []
+envCon (x:xs) = (fst x ++ " = " ++ (show $ snd x)) : envCon xs
 
 -- buildInitState: bui
 buildInitState :: IO MyState
