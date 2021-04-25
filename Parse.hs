@@ -42,7 +42,6 @@ lookUp a ((x,y):zs) = if (a==x) then y else lookUp a zs
 
 --this function adds a var to a env list 
 addVar :: (String, Double) -> Env -> Env 
-addVar x [] = [x]
 addVar x env = x : env 
 
 --when calling update we will need to call remove to replace the env 
@@ -101,10 +100,8 @@ isCSym (x:xs) | x `elem` ['0' .. '9'] = isCSym xs
 isVSym :: String -> Bool 
 isVSym [] = False
 isVSym (x:xs) =  if isLower x then isVSym' xs else False 
-
-isVSym' :: String -> Bool
-isVSym' [] = True
-isVSym' (x:xs) = if (isLower x || isDigit x) then isVSym' xs else False
+              where isVSym' [] = True
+                    isVSym' (x:xs) = if (isLower x || isDigit x) then isVSym' xs else False
 
 classify :: String -> Token
 classify "(" = LPar
