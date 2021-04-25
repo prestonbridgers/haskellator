@@ -1,4 +1,4 @@
-module Parse where 
+module Parse (exec) where 
 
 import Data.Char
 
@@ -104,7 +104,7 @@ isVSym (x:xs) =  if isLower x then isVSym' xs else False
 
 isVSym' :: String -> Bool
 isVSym' [] = True
-isVSym' (x:xs) = if (isLower x && isDigit x) then isVSym' xs else False
+isVSym' (x:xs) = if (isLower x || isDigit x) then isVSym' xs else False
 
 classify :: String -> Token
 classify "(" = LPar
@@ -120,23 +120,6 @@ classify "sin" = UOp SinOp
 classify x | isVSym x = VSym x
            | isCSym x = CSym (read x :: Double)
            | otherwise = error "classify error: Not a token"
-
- 
-
--- data Token = Tcon N 
---            | TId Id
---            | AddOp 
---            | SubOp
---            | MulOp 
---            | DivOp
---            | ExpOp 
---            | CosOp
---            | SinOp
---            | OpAss
---            | LPar | RPar
---            | TExpr Expr 
---            | TAss Id Expr 
---            deriving Show 
 
 -- here we are goin to do all the parsing in this file 
 parse :: [Token] -> [Token] -> [Token]
@@ -165,14 +148,7 @@ tokToIn [(TExpr e1)] = AExpr e1
 tokToIn [(TAss (Assign id e1))] = Assign id e1 
 tokToIn _ = error "Parse Error"
 
-tt :: String -> [Token]
-tt s = tokenize s 
-
-pp :: [Token] -> [Token]
-pp s = parse [] s
-
-tok :: [Token] -> Instr
-tok s = tokToIn s
-
 exec :: String -> Env -> Either Env Double
-exec s env = eval (tok (pp (tt s))) (env)
+exec s env = eval (run s) env
+    where run = tokToIn . parse [] . tokenize
+
