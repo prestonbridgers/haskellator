@@ -80,7 +80,7 @@ prep ('(':xs) = " ( " ++ prep xs
 prep (')':xs) = " ) " ++ prep xs
 prep ('+':xs) = " + " ++ prep xs
 prep ('-':xs) = " - " ++ prep xs
-prep ('=':xs) = " = " ++ prep xs
+prep ('=':xs) = " = ( " ++ prep xs ++ " )"
 prep ('*':xs) = " * " ++ prep xs
 prep ('/':xs) = " / " ++ prep xs
 prep ('^':xs) = " ^ " ++ prep xs
@@ -100,8 +100,8 @@ isCSym (x:xs) | x `elem` ['0' .. '9'] = isCSym xs
 isVSym :: String -> Bool 
 isVSym [] = False
 isVSym (x:xs) =  if isLower x then isVSym' xs else False 
-              where isVSym' [] = True
-                    isVSym' (x:xs) = if (isLower x || isDigit x) then isVSym' xs else False
+                 where isVSym' [] = True
+                       isVSym' (x:xs) = if x `elem` ['a'..'z']++['A'..'Z']++['0'..'9']++"-_" then isVSym' xs else False
 
 classify :: String -> Token
 classify "(" = LPar
@@ -144,6 +144,14 @@ tokToIn [] = error "Nothing to parse to instruction"
 tokToIn [(TExpr e1)] = AExpr e1 
 tokToIn [(TAss (Assign id e1))] = Assign id e1 
 tokToIn _ = error "Parse Error"
+
+-- addParensAfterEq :: String -> String
+-- addParensAfterEq [] = []
+-- addParensAfterEq s | '=' `elem` s = addParensAfterEq' [] s
+--              | otherwise    = s
+--              where addParensAfterEq' stack []     = []
+--                    addParensAfterEq' stack (x:xs) | x == '='  = stack ++ "=(" ++ xs ++ ")"
+--                                                   | otherwise = addParensAfterEq' (stack ++ [x]) xs
 
 exec :: String -> Env -> Either Env Double
 exec s env = eval (run s) env
