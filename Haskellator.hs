@@ -69,8 +69,11 @@ main = do
 -- the appropriate resource name
 drawUI :: MyState -> [Widget ResourceName]
 drawUI s = [
-           (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 1) $ hCenter $ str $ "when giving variables values to use later you must put everything after = in parenthesis.")
-            <=> (padTop (Pad 1) $ hCenter $ str $ "example: x = (3+1), y = (4)") <=> (padTop (Pad 1) $ hCenter $ str $ "you can used saved values instead of rewriting the numbers they represent") 
+           (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 1) $ hCenter $ str $ "when giving variables values to use later you must put everything after = in parenthesis, and assignment must happen on the right side of equals.")
+            <=> (padTop (Pad 1) $ hCenter $ str $ "Example: Correct : x = (3+1), y = (4) Wrong: x = 3+1 , 4 = y")
+            <=> (padTop (Pad 1) $ hCenter $ str $ "When using Cos and Sin put the values you want to evaluate inside parenthesis") 
+            <=> (padTop (Pad 1) $ hCenter $ str $ "Example: Correct: cos(3+1+2), sin(1/2) Wrong: cos 3+1+2, sin 1/2") 
+            <=> (padTop (Pad 1) $ hCenter $ str $ "you can used saved values instead of rewriting the numbers they represent") 
             <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envCon $ s^.env)
            ,center $ border $ str $ s^.evalString
            ]
