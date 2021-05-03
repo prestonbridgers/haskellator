@@ -145,14 +145,6 @@ tokToIn [(TExpr e1)] = AExpr e1
 tokToIn [(TAss (Assign id e1))] = Assign id e1 
 tokToIn _ = error "Parse Error"
 
--- addParensAfterEq :: String -> String
--- addParensAfterEq [] = []
--- addParensAfterEq s | '=' `elem` s = addParensAfterEq' [] s
---              | otherwise    = s
---              where addParensAfterEq' stack []     = []
---                    addParensAfterEq' stack (x:xs) | x == '='  = stack ++ "=(" ++ xs ++ ")"
---                                                   | otherwise = addParensAfterEq' (stack ++ [x]) xs
-
 exec :: String -> Env -> Either Env Double
 exec s env = eval (run s) env
     where run = tokToIn . parse [] . tokenize
