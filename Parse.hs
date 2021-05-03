@@ -19,7 +19,7 @@ data Expr = Var Id | Const N
           |Sin Expr
           deriving Show 
 
-data BOps = OpAss | SubOp | AddOp | DivOp | MulOp | ExpOp
+data BOps = SubOp | AddOp | DivOp | MulOp | ExpOp | OpAss 
            deriving (Show,Enum,Eq,Ord)
 
 data UOps =  CosOp | SinOp
@@ -123,6 +123,8 @@ parse :: [Token] -> [Token] -> [Token]
 parse (CSym n : stack)                    input = parse (TExpr (Const n): stack) input
 parse (VSym v : stack)                   input = parse (TExpr (Var v): stack) input
 parse (RPar: TExpr e : LPar : stack)      input = parse (TExpr e : stack) input -- taking care of parens we just get rid of them 
+--- correct precidence
+parse s@(TExpr e2 : BOp op1 : TExpr e1 : stack) (BOp op2 : input) | op1 < op2 = parse (BOp op2 : s) input
 
 parse (TExpr e2 : BOp AddOp : TExpr e1 : stack) input = parse (TExpr (Add e1 e2) : stack) input -- covers add
 parse (TExpr e2 : BOp SubOp : TExpr e1: stack)  input = parse (TExpr(Sub e1 e2) : stack) input -- covers Sub
