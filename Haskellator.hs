@@ -70,7 +70,7 @@ main = do
 drawUI :: MyState -> [Widget ResourceName]
 drawUI s = [
            (hCenter $ str $ "Haskellator v0.1") <=> (padTop (Pad 1) $ hCenter $ str $ "when giving variables values to use later you must put everything after = in parenthesis.")
-            <=> (padTop (Pad 1) $ hCenter $ str $ "example: x = (3+1), y = (4)") <=> (padTop (Pad 1) $ hCenter $ str $ "you can used saved values instead of rewriting the numbers they represent") 
+            <=> (padTop (Pad 1) $ hCenter $ str $ "example: x = (3+1), y = (4) NOT: x = 3+1 , y = 4") <=> (padTop (Pad 1) $ hCenter $ str $ "you can used saved values instead of rewriting the numbers they represent") 
             <=> (padTop (Pad 2) $ hCenter $ border $ vBox $ map str $ envCon $ s^.env)
            ,center $ border $ str $ s^.evalString
            ]
